@@ -79,4 +79,5 @@ chainlit.md
 # ===== MISC =====
 *.pages
 .ipynb_checkpoints/
-.client_secret_867033791132-jj2esnutv4ufqjjm7k62u7i1ml6mcdfm.apps.googleusercontent.com.json
+.client_secret_867033791132-jj2esnutv4ufqjjm7k62u7i1ml6mcdfm.apps.googleusercontent.com.jsonJojos Boutick Inventory.pages
+Jojos Boutick.pages
