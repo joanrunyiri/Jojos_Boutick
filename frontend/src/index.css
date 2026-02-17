@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #BC9F8B;
+  --secondary: #FDF6F0;
+  --accent: #8DA399;
+  --background: #FFFCFA;
+  --surface: #FFFFFF;
+  --text-primary: #4A4A4A;
+  --text-secondary: #7D7D7D;
+  --border: #E5E0DC;
+  --success: #8DA399;
+  --error: #E57373;
+  --brand-delivery: #FCDA45;
+}
+
+body {
+  margin: 0;
+  font-family: 'Mulish', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+.font-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-sans {
+  font-family: 'Mulish', sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 30 50% 99%;
+    --foreground: 0 0% 29%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 29%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 29%;
+    --primary: 22 28% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 25 67% 97%;
+    --secondary-foreground: 0 0% 29%;
+    --muted: 25 67% 97%;
+    --muted-foreground: 0 0% 49%;
+    --accent: 140 18% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 65% 67%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 14% 88%;
+    --input: 30 14% 88%;
+    --ring: 22 28% 64%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A88B77;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Glass morphism */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Product card hover */
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-card:hover .add-to-cart-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.add-to-cart-btn {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply rounded-full bg-[#BC9F8B] text-white hover:bg-[#A88B77] transition-all duration-300 px-8 py-3 text-sm tracking-widest uppercase font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5;
+}
+
+.btn-secondary {
+  @apply rounded-full bg-[#FDF6F0] text-[#BC9F8B] hover:bg-[#F5EBE0] transition-all duration-300 px-8 py-3 text-sm tracking-widest uppercase font-medium;
+}
+
+.btn-outline {
+  @apply rounded-full border border-[#BC9F8B] text-[#BC9F8B] hover:bg-[#BC9F8B] hover:text-white transition-all duration-300 px-8 py-3;
+}
+
+/* Input styles */
+.input-base {
+  @apply rounded-lg border-[#E5E0DC] bg-white px-4 py-3 text-[#4A4A4A] focus:border-[#BC9F8B] focus:ring-1 focus:ring-[#BC9F8B] transition-all outline-none placeholder:text-[#BC9F8B]/50;
+}
+
+/* Card styles */
+.card-product {
+  @apply relative bg-white rounded-xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)];
+}
+
+.card-feature {
+  @apply p-8 rounded-2xl bg-[#FDF6F0]/50 hover:bg-[#FDF6F0] transition-colors duration-300;
+}
+
+/* Animation keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Stagger animation delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* Loading spinner */
+.spinner {
+  border: 3px solid var(--secondary);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

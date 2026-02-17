@@ -1,0 +1,155 @@
+{
+  "brand_identity": {
+    "name": "Jojos Boutick",
+    "slogan": "Elegance with Edge",
+    "core_values": ["Calm", "Feminine", "Functional", "Kenyan Elegance"],
+    "target_audience": "Fashion-conscious women in Kenya",
+    "theme_mode": "light"
+  },
+  "typography": {
+    "primary_font": "Playfair Display",
+    "secondary_font": "Mulish",
+    "font_weights": {
+      "light": 300,
+      "regular": 400,
+      "medium": 500,
+      "bold": 700
+    },
+    "scale": {
+      "h1": "text-4xl md:text-6xl font-serif tracking-tight",
+      "h2": "text-3xl md:text-5xl font-serif tracking-tight",
+      "h3": "text-2xl md:text-3xl font-serif",
+      "body_lg": "text-lg md:text-xl font-sans leading-relaxed",
+      "body_base": "text-base font-sans leading-relaxed",
+      "caption": "text-sm text-muted-foreground font-sans tracking-wide"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": "#BC9F8B",
+      "secondary": "#FDF6F0",
+      "accent": "#8DA399",
+      "background": "#FFFCFA",
+      "surface": "#FFFFFF",
+      "text_primary": "#4A4A4A",
+      "text_secondary": "#7D7D7D",
+      "border": "#E5E0DC",
+      "success": "#8DA399",
+      "error": "#E57373",
+      "brand_delivery": "#FCDA45"
+    },
+    "usage": {
+      "primary": "Main buttons, active states, key highlights",
+      "secondary": "Background washes, decorative blobs, secondary buttons",
+      "accent": "Success states, eco-friendly badges, 'New' tags",
+      "text_primary": "Headings, body text",
+      "brand_delivery": "Pick Up Mtaani logo/badge only"
+    }
+  },
+  "layout": {
+    "grid_system": {
+      "marketing": "grid-cols-1 md:grid-cols-12 gap-8 md:gap-12",
+      "products": "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12"
+    },
+    "spacing": {
+      "section_y": "py-20 md:py-32",
+      "container_x": "px-6 md:px-12 lg:px-20",
+      "element_gap": "gap-6"
+    },
+    "containers": {
+      "max_width": "max-w-7xl mx-auto",
+      "glass": "bg-white/80 backdrop-blur-md border border-white/20"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "rounded-full bg-[#BC9F8B] text-white hover:bg-[#A88B77] transition-all duration-300 px-8 py-3 text-sm tracking-widest uppercase font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5",
+      "secondary": "rounded-full bg-[#FDF6F0] text-[#BC9F8B] hover:bg-[#F5EBE0] transition-all duration-300 px-8 py-3 text-sm tracking-widest uppercase font-medium",
+      "outline": "rounded-full border border-[#BC9F8B] text-[#BC9F8B] hover:bg-[#BC9F8B] hover:text-white transition-all duration-300 px-8 py-3"
+    },
+    "cards": {
+      "product": "group relative bg-white rounded-xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]",
+      "feature": "p-8 rounded-2xl bg-[#FDF6F0]/50 hover:bg-[#FDF6F0] transition-colors duration-300"
+    },
+    "inputs": {
+      "base": "rounded-lg border-[#E5E0DC] bg-white px-4 py-3 text-[#4A4A4A] focus:border-[#BC9F8B] focus:ring-1 focus:ring-[#BC9F8B] transition-all outline-none placeholder:text-[#BC9F8B]/50"
+    }
+  },
+  "motion": {
+    "library": "framer-motion",
+    "animations": {
+      "fade_up": {
+        "initial": { "opacity": 0, "y": 20 },
+        "animate": { "opacity": 1, "y": 0 },
+        "transition": { "duration": 0.6, "ease": "easeOut" }
+      },
+      "stagger_children": {
+        "animate": { "transition": { "staggerChildren": 0.1 } }
+      },
+      "hover_scale": {
+        "whileHover": { "scale": 1.05 }
+      }
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_main": {
+        "url": "https://images.unsplash.com/photo-1763551229890-64e97d845251?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwyfHxBZnJpY2FuJTIwd29tYW4lMjBmYXNoaW9uJTIwZWxlZ2FudCUyMGRyZXNzJTIwbmV1dHJhbCUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzcxMjQxMzE1fDA&ixlib=rb-4.1.0&q=85",
+        "alt": "Elegant African woman in brown dress",
+        "usage": "Homepage Hero"
+      },
+      "category_dresses": {
+        "url": "https://images.unsplash.com/photo-1596484552993-aec4311d3381?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwyfHxib3V0aXF1ZSUyMGNsb3RoaW5nJTIwcmFjayUyMGRyZXNzZXMlMjBuZXV0cmFsJTIwYWVzdGhldGljfGVufDB8fHx8MTc3MTI0MTMxNnww&ixlib=rb-4.1.0&q=85",
+        "alt": "Boutique dresses on rack",
+        "usage": "Category Card: Dresses"
+      },
+      "category_skirts": {
+        "url": "https://images.unsplash.com/photo-1728507523256-47e4caeed925?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwzfHx3b21hbiUyMHdlYXJpbmclMjBza2lydCUyMGZhc2hpb24lMjBuZXV0cmFsfGVufDB8fHx8MTc3MTI0MTMzMHww&ixlib=rb-4.1.0&q=85",
+        "alt": "Woman in stylish skirt",
+        "usage": "Category Card: Skirts"
+      },
+      "category_coats": {
+        "url": "https://images.unsplash.com/photo-1673105793839-6c2811a4e1e7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHwyfHx3b21hbiUyMHdlYXJpbmclMjBzdHlsaXNoJTIwYmVpZ2UlMjBjb2F0fGVufDB8fHx8MTc3MTI0MTMyOXww&ixlib=rb-4.1.0&q=85",
+        "alt": "Woman in beige coat",
+        "usage": "Category Card: Coats"
+      },
+      "category_sunglasses": {
+        "url": "https://images.unsplash.com/photo-1620743364130-8a1669f00b64?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxmYXNoaW9uJTIwc3VuZ2xhc3NlcyUyMHdvbWFufGVufDB8fHx8MTc3MTI0MTMyOHww&ixlib=rb-4.1.0&q=85",
+        "alt": "Woman wearing sunglasses",
+        "usage": "Category Card: Sun Glasses"
+      },
+      "category_2piece": {
+        "url": "https://images.unsplash.com/photo-1768221677363-55e754eb6021?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MjJ8MHwxfHNlYXJjaHwyfHxtYXRjaGluZyUyMG91dGZpdCUyMHNldCUyMHdvbWFuJTIwZmFzaGlvbnxlbnwwfHx8fDE3NzEyNDEzMzF8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Matching floral set",
+        "usage": "Category Card: 2 Piece"
+      },
+      "delivery_tracking": {
+        "url": "https://images.unsplash.com/photo-1758874089961-e52549c294c3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHxkZWxpdmVyeSUyMHBhY2thZ2UlMjBoYXBweSUyMHdvbWFufGVufDB8fHx8MTc3MTI0MTMyMXww&ixlib=rb-4.1.0&q=85",
+        "alt": "Happy woman receiving package",
+        "usage": "Order Tracking Section"
+      }
+    },
+    "icons": {
+      "library": "lucide-react, react-icons",
+      "instructions": "Use Lucide for UI icons (User, ShoppingBag, Menu). Use react-icons/fa for brands (FaGoogle, FaCcStripe). Create custom SVG for M-Pesa if not available in react-icons."
+    }
+  },
+  "instructions_to_main_agent": [
+    "INSTALL: framer-motion, react-icons (yarn add framer-motion react-icons)",
+    "SETUP: Add Google Fonts 'Playfair Display' and 'Mulish' to index.html or index.css immediately.",
+    "THEME: Force LIGHT MODE. Do not implement dark mode toggle unless strictly necessary for admin. The storefront must be light/warm.",
+    "NAVBAR: Create a centered logo navbar with 'Home', 'Shop', 'About', 'Contact' links. Glassmorphism effect is mandatory.",
+    "FOOTER: Minimalist footer with newsletter signup (use rounded-full input).",
+    "PRODUCT CARD: Image takes 80% of height. Text is minimal below. Hovering reveals 'Add to Cart' button sliding up.",
+    "DELIVERY: In Checkout, 'Pick Up Mtaani' option should have a small yellow dot/badge to signify the brand without overwhelming the design.",
+    "ADMIN: Keep Admin dashboard clean but functional. Use a sidebar layout. Can be slightly more dense than the storefront.",
+    "TESTING: Add 'data-testid' to all buttons, inputs, and links."
+  ],
+  "UNIVERSAL_GUIDELINES": [
+    "Do not use gradients for backgrounds. Use solid warm neutrals or subtle mesh gradients if absolutely necessary.",
+    "Rounded corners should be consistent (lg or xl for cards, full for buttons).",
+    "Shadows should be colored (e.g., shadow-stone-200) not pure black.",
+    "Use 2x padding inside cards. Never let text touch borders.",
+    "Images must have 'object-cover' and 'transition-transform duration-700' for slow zoom effect on hover."
+  ]
+}
