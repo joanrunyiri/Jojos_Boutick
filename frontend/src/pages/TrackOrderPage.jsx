@@ -71,7 +71,7 @@ const TrackOrderPage = () => {
           <form onSubmit={handleTrack} className="mb-12">
             <div className="flex gap-3">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7D7D7D]" />
+                {/* <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7D7D7D]" /> */}
                 <Input
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}

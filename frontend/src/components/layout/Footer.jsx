@@ -25,7 +25,7 @@ const Footer = () => {
             </h2>
             <p className="text-sm text-white/70 italic mb-6">Elegance with Edge</p>
             <p className="text-sm text-white/60 leading-relaxed">
-              Curated fashion for the modern Kenyan woman. Style that speaks, elegance that lasts.
+              Curated fashion for the modern woman. Style that speaks, elegance that lasts.
             </p>
           </div>
 

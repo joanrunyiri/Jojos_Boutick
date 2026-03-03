@@ -41,7 +41,6 @@ const Navbar = () => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
-
   return (
     <>
       <nav
@@ -88,11 +87,7 @@ const Navbar = () => {
             {/* Right Side Icons */}
             <div className="flex items-center gap-4">
               {/* Cart */}
-              <Link
-                to="/cart"
-                className="relative p-2"
-                data-testid="cart-link"
-              >
+              <Link to="/cart" className="relative p-2" data-testid="cart-link">
                 <ShoppingBag className="w-6 h-6 text-[#4A4A4A]" />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#BC9F8B] text-white text-xs rounded-full flex items-center justify-center cart-badge">
@@ -105,12 +100,16 @@ const Navbar = () => {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 p-2" data-testid="user-menu-btn">
+                    <button
+                      className="flex items-center gap-2 p-2"
+                      data-testid="user-menu-btn"
+                    >
                       {user.picture ? (
                         <img
                           src={user.picture}
                           alt={user.name}
                           className="w-8 h-8 rounded-full object-cover"
+                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <User className="w-6 h-6 text-[#4A4A4A]" />
@@ -120,24 +119,40 @@ const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <div className="px-3 py-2">
-                      <p className="text-sm font-medium truncate">{user.name}</p>
-                      <p className="text-xs text-[#7D7D7D] truncate">{user.email}</p>
+                      <p className="text-sm font-medium truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-[#7D7D7D] truncate">
+                        {user.email}
+                      </p>
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/orders" className="cursor-pointer" data-testid="my-orders-link">
+                      <Link
+                        to="/orders"
+                        className="cursor-pointer"
+                        data-testid="my-orders-link"
+                      >
                         My Orders
                       </Link>
                     </DropdownMenuItem>
                     {user.is_admin && (
                       <DropdownMenuItem asChild>
-                        <Link to="/admin" className="cursor-pointer" data-testid="admin-link">
+                        <Link
+                          to="/admin"
+                          className="cursor-pointer"
+                          data-testid="admin-link"
+                        >
                           Admin Dashboard
                         </Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600" data-testid="logout-btn">
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="cursor-pointer text-red-600"
+                      data-testid="logout-btn"
+                    >
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -180,7 +195,10 @@ const Navbar = () => {
                   <h1 className="font-serif text-2xl font-semibold text-[#4A4A4A]">
                     Jojos <span className="text-[#BC9F8B]">Boutick</span>
                   </h1>
-                  <button onClick={() => setMobileMenuOpen(false)} data-testid="close-menu-btn">
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    data-testid="close-menu-btn"
+                  >
                     <X className="w-6 h-6 text-[#4A4A4A]" />
                   </button>
                 </div>
@@ -203,11 +221,17 @@ const Navbar = () => {
 
                   {user ? (
                     <>
-                      <Link to="/orders" className="block py-3 text-lg border-b border-[#E5E0DC] text-[#4A4A4A]">
+                      <Link
+                        to="/orders"
+                        className="block py-3 text-lg border-b border-[#E5E0DC] text-[#4A4A4A]"
+                      >
                         My Orders
                       </Link>
                       {user.is_admin && (
-                        <Link to="/admin" className="block py-3 text-lg border-b border-[#E5E0DC] text-[#4A4A4A]">
+                        <Link
+                          to="/admin"
+                          className="block py-3 text-lg border-b border-[#E5E0DC] text-[#4A4A4A]"
+                        >
                           Admin Dashboard
                         </Link>
                       )}

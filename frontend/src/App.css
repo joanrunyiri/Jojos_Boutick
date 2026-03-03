@@ -107,7 +107,7 @@
 
 /* Quantity selector */
 .quantity-btn {
-  @apply w-8 h-8 flex items-center justify-center rounded-full border border-[#E5E0DC] hover:border-[#BC9F8B] hover:bg-[#FDF6F0] transition-all;
+  @apply w-8 h-8 flex items-center justify-center rounded-full border border-[#E5E0DC] hover:border-[#BC9F8B] hover:bg-[#FDF6F0] transition-all text-[#4A4A4A];
 }
 
 /* Size selector */

@@ -35,11 +35,14 @@ const ProductCard = ({ product }) => {
       {/* Image Container */}
       <div className="relative product-image-container aspect-[3/4] bg-[#FDF6F0] rounded-xl overflow-hidden">
         <img
-          src={product.images?.[0] || "https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=400&h=500&fit=crop"}
+          src={
+            product.images?.[0].url ||
+            "https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=400&h=500&fit=crop"
+          }
           alt={product.name}
           className="product-image w-full h-full object-cover"
         />
-        
+
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.is_featured && (
@@ -84,7 +87,7 @@ const ProductCard = ({ product }) => {
         <p className="text-[#4A4A4A] font-semibold mt-1 price-tag">
           {formatPrice(product.price)}
         </p>
-        
+
         {/* Colors */}
         {product.colors?.length > 0 && (
           <div className="flex items-center gap-1 mt-2">
@@ -97,7 +100,9 @@ const ProductCard = ({ product }) => {
               ></span>
             ))}
             {product.colors.length > 4 && (
-              <span className="text-xs text-[#7D7D7D]">+{product.colors.length - 4}</span>
+              <span className="text-xs text-[#7D7D7D]">
+                +{product.colors.length - 4}
+              </span>
             )}
           </div>
         )}

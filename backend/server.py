@@ -68,13 +68,17 @@ class Product(BaseModel):
     description: str
     price: float
     category: str  # dresses, skirts, coats, 2_piece, sunglasses
-    images: List[str] = []
-    sizes: List[str] = []
+    images: List[Dict[str, str]] = []  # [{"color": "Red", "url": "..."}]
+    sizes: List[str] = []  # [{"size": "M"}]
     colors: List[str] = []
     stock: int = 0
     is_featured: bool = False
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProductImage(BaseModel):
+    color: str
+    url: str    
 
 
 class ProductCreate(BaseModel):
@@ -82,7 +86,7 @@ class ProductCreate(BaseModel):
     description: str
     price: float
     category: str
-    images: List[str] = []
+    images: List[ProductImage] = []
     sizes: List[str] = []
     colors: List[str] = []
     stock: int = 0
@@ -94,7 +98,8 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     price: Optional[float] = None
     category: Optional[str] = None
-    images: Optional[List[str]] = None
+    images: Optional[List[ProductImage]] = None
+    
     sizes: Optional[List[str]] = None
     colors: Optional[List[str]] = None
     stock: Optional[int] = None
@@ -127,6 +132,7 @@ class CartItem(BaseModel):
     size: Optional[str] = None
     color: Optional[str] = None
     image: Optional[str] = None
+
 
 
 class Cart(BaseModel):
@@ -591,6 +597,7 @@ async def add_to_cart(item: AddToCartRequest, request: Request):
     
     # Get product
     product = await db.products.find_one({"product_id": item.product_id}, {"_id": 0})
+    logging.info(product)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
@@ -617,7 +624,7 @@ async def add_to_cart(item: AddToCartRequest, request: Request):
             quantity=item.quantity,
             size=item.size,
             color=item.color,
-            image=product["images"][0] if product.get("images") else None,
+            image=product["images"][0]["url"] if len(product.get("images"))>0 else None,
         ).model_dump())
     
     query = {"user_id": user["user_id"]} if user else {"session_id": session_id}
@@ -1038,7 +1045,8 @@ async def initiate_mpesa_payment(
     
     # Callback URL
     host_url = str(request.base_url).rstrip("/")
-    callback_url = f"{host_url}/api/payments/mpesa/callback"
+    # callback_url = f"{host_url}/api/payments/mpesa/callback"
+    callback_url = os.environ.get("MPESA_CALLBACK_URL", f"{str(request.base_url).rstrip('/')}/api/payments/mpesa/callback")
     
     # STK Push URL
     stk_url = (
@@ -1076,13 +1084,14 @@ async def initiate_mpesa_payment(
             raise HTTPException(status_code=500, detail="Failed to initiate payment")
         
         result = response.json()
-    
+        logger.info(f"CheckoutRequestID: {result}")
+
     if result.get("ResponseCode") != "0":
         raise HTTPException(
             status_code=400,
             detail=result.get("ResponseDescription", "Payment initiation failed")
         )
-    
+
     # Create payment transaction
     transaction = PaymentTransaction(
         order_id=order_id,
@@ -1228,8 +1237,8 @@ async def get_pickup_agents():
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                "https://api.pickupmtaani.com/api/v1/locations",
-                headers={"Authorization": f"Bearer {api_key}"},
+                "https://api.pickupmtaani.com/api/v1/agents",
+                headers={"apiKey": api_key,"accept": "application/json"},
             )
             if response.status_code == 200:
                 return {"agents": response.json()}

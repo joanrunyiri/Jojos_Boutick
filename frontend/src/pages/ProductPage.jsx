@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingBag, Heart, Share2, ChevronLeft, Star, Truck, Shield } from "lucide-react";
+import {
+  ShoppingBag,
+  Heart,
+  Share2,
+  ChevronLeft,
+  Star,
+  Truck,
+  Shield,
+} from "lucide-react";
 import axios from "axios";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -27,7 +35,7 @@ const ProductPage = () => {
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [submittingReview, setSubmittingReview] = useState(false);
-
+  const [currentImage, setCurrentImage] = useState("");
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
@@ -39,6 +47,13 @@ const ProductPage = () => {
         }
         if (response.data.colors?.length > 0) {
           setSelectedColor(response.data.colors[0]);
+
+          const firstColorImage = response.data.images?.find(
+            (img) => img.color === response.data.colors[0],
+          );
+          setCurrentImage(
+            firstColorImage?.url || response.data.images[0]?.url || "",
+          );
         }
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -48,9 +63,22 @@ const ProductPage = () => {
     };
     fetchProduct();
   }, [productId]);
+  //   onClick={() => {
+  //   setSelectedColor(color);
+  //   const colorImage = product.images?.find(img => img.color === color);
+  //   if (colorImage) {
+  //     setCurrentImage(colorImage.url);
+  //     setActiveImageIndex(0); // Reset to first image
+  //   }
+  // }}
 
   const handleAddToCart = async () => {
-    const success = await addToCart(product.product_id, quantity, selectedSize, selectedColor);
+    const success = await addToCart(
+      product.product_id,
+      quantity,
+      selectedSize,
+      selectedColor,
+    );
     if (success) {
       toast.success(`${product.name} added to cart`);
     } else {
@@ -77,7 +105,7 @@ const ProductPage = () => {
           rating: reviewRating,
           comment: reviewText,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast.success("Review submitted successfully");
       setReviewText("");
@@ -100,7 +128,10 @@ const ProductPage = () => {
   };
 
   const averageRating = product?.reviews?.length
-    ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length).toFixed(1)
+    ? (
+        product.reviews.reduce((sum, r) => sum + r.rating, 0) /
+        product.reviews.length
+      ).toFixed(1)
     : 0;
 
   if (loading) {
@@ -126,7 +157,9 @@ const ProductPage = () => {
       <div className="min-h-screen bg-[#FFFCFA]">
         <Navbar />
         <div className="pt-24 pb-20 text-center">
-          <h1 className="text-2xl font-serif text-[#4A4A4A]">Product not found</h1>
+          <h1 className="text-2xl font-serif text-[#4A4A4A]">
+            Product not found
+          </h1>
           <Link to="/shop" className="btn-primary mt-4 inline-block">
             Back to Shop
           </Link>
@@ -136,9 +169,15 @@ const ProductPage = () => {
     );
   }
 
-  const images = product.images?.length > 0 
-    ? product.images 
-    : ["https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=800"];
+  const images =
+    product.images?.length > 0
+      ? product.images
+      : [
+          {
+            color: "",
+            url: "https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=800",
+          },
+        ];
 
   return (
     <div className="min-h-screen bg-[#FFFCFA]">
@@ -167,7 +206,7 @@ const ProductPage = () => {
                 className="aspect-[3/4] bg-[#FDF6F0] rounded-2xl overflow-hidden mb-4"
               >
                 <img
-                  src={images[activeImageIndex]}
+                  src={images[activeImageIndex]?.url}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
@@ -184,7 +223,11 @@ const ProductPage = () => {
                           : "border-transparent hover:border-[#E5E0DC]"
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={img.url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -223,12 +266,16 @@ const ProductPage = () => {
                 {formatPrice(product.price)}
               </p>
 
-              <p className="text-[#7D7D7D] leading-relaxed mb-8">{product.description}</p>
+              <p className="text-[#7D7D7D] leading-relaxed mb-8">
+                {product.description}
+              </p>
 
               {/* Size Selector */}
               {product.sizes?.length > 0 && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-[#4A4A4A] mb-3">Size</p>
+                  <p className="text-sm font-medium text-[#4A4A4A] mb-3">
+                    Size
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {product.sizes.map((size) => (
                       <button
@@ -248,13 +295,25 @@ const ProductPage = () => {
               {product.colors?.length > 0 && (
                 <div className="mb-6">
                   <p className="text-sm font-medium text-[#4A4A4A] mb-3">
-                    Color: <span className="text-[#7D7D7D]">{selectedColor}</span>
+                    Color:{" "}
+                    <span className="text-[#7D7D7D]">{selectedColor}</span>
                   </p>
                   <div className="flex flex-wrap gap-3">
                     {product.colors.map((color) => (
                       <button
                         key={color}
-                        onClick={() => setSelectedColor(color)}
+                        onClick={() => {
+                          setSelectedColor(color);
+                          const colorImage = product.images?.find(
+                            (img) => img.color === color,
+                          );
+                          if (colorImage) {
+                            setCurrentImage(colorImage.url);
+                            setActiveImageIndex(
+                              product.images.indexOf(colorImage),
+                            );
+                          }
+                        }}
                         className={`color-swatch ${selectedColor === color ? "selected" : ""}`}
                         style={{ backgroundColor: color.toLowerCase() }}
                         title={color}
@@ -267,7 +326,9 @@ const ProductPage = () => {
 
               {/* Quantity */}
               <div className="mb-8">
-                <p className="text-sm font-medium text-[#4A4A4A] mb-3">Quantity</p>
+                <p className="text-sm font-medium text-[#4A4A4A] mb-3">
+                  Quantity
+                </p>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -276,7 +337,9 @@ const ProductPage = () => {
                   >
                     -
                   </button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <span className="w-12 text-center font-medium">
+                    {quantity}
+                  </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
                     className="quantity-btn"
@@ -314,7 +377,7 @@ const ProductPage = () => {
               <div className="border-t border-[#E5E0DC] pt-6 space-y-4">
                 <div className="flex items-center gap-3 text-sm text-[#7D7D7D]">
                   <Truck className="w-5 h-5 text-[#BC9F8B]" />
-                  <span>Free delivery via Pick Up Mtaani</span>
+                  <span>Delivery via Pick Up Mtaani</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[#7D7D7D]">
                   <Shield className="w-5 h-5 text-[#BC9F8B]" />
@@ -328,7 +391,10 @@ const ProductPage = () => {
           <div className="mt-16">
             <Tabs defaultValue="reviews" className="w-full">
               <TabsList className="w-full justify-start border-b border-[#E5E0DC] bg-transparent">
-                <TabsTrigger value="reviews" className="data-[state=active]:text-[#BC9F8B] data-[state=active]:border-b-2 data-[state=active]:border-[#BC9F8B]">
+                <TabsTrigger
+                  value="reviews"
+                  className="data-[state=active]:text-[#BC9F8B] data-[state=active]:border-b-2 data-[state=active]:border-[#BC9F8B]"
+                >
                   Reviews ({product.reviews?.length || 0})
                 </TabsTrigger>
               </TabsList>
@@ -336,7 +402,9 @@ const ProductPage = () => {
               <TabsContent value="reviews" className="mt-6">
                 {/* Write Review */}
                 <div className="bg-[#FDF6F0] rounded-xl p-6 mb-8">
-                  <h3 className="font-medium text-[#4A4A4A] mb-4">Write a Review</h3>
+                  <h3 className="font-medium text-[#4A4A4A] mb-4">
+                    Write a Review
+                  </h3>
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-sm text-[#7D7D7D]">Rating:</span>
                     {[...Array(5)].map((_, i) => (
@@ -369,7 +437,11 @@ const ProductPage = () => {
                     className="btn-primary"
                     data-testid="submit-review-btn"
                   >
-                    {submittingReview ? "Submitting..." : user ? "Submit Review" : "Sign in to Review"}
+                    {submittingReview
+                      ? "Submitting..."
+                      : user
+                        ? "Submit Review"
+                        : "Sign in to Review"}
                   </Button>
                 </div>
 
@@ -377,9 +449,14 @@ const ProductPage = () => {
                 {product.reviews?.length > 0 ? (
                   <div className="space-y-6">
                     {product.reviews.map((review) => (
-                      <div key={review.review_id} className="border-b border-[#E5E0DC] pb-6">
+                      <div
+                        key={review.review_id}
+                        className="border-b border-[#E5E0DC] pb-6"
+                      >
                         <div className="flex items-center justify-between mb-2">
-                          <p className="font-medium text-[#4A4A4A]">{review.user_name}</p>
+                          <p className="font-medium text-[#4A4A4A]">
+                            {review.user_name}
+                          </p>
                           <div className="flex items-center gap-1">
                             {[...Array(5)].map((_, i) => (
                               <Star

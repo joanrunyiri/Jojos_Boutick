@@ -15,7 +15,13 @@ import {
 import axios from "axios";
 import { useAuth } from "@/App";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -42,12 +48,15 @@ const AdminOrders = () => {
   useEffect(() => {
     fetchOrders();
   }, [statusFilter]);
+  console.log(selectedOrder);
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const params = statusFilter !== "all" ? `?status=${statusFilter}` : "";
-      const response = await axios.get(`${API}/admin/orders${params}`, { withCredentials: true });
+      const response = await axios.get(`${API}/admin/orders${params}`, {
+        withCredentials: true,
+      });
       setOrders(response.data.orders);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -72,9 +81,12 @@ const AdminOrders = () => {
         `${API}/admin/orders/${selectedOrder.order_id}/status`,
         null,
         {
-          params: { status: newStatus, tracking_number: trackingNumber || undefined },
+          params: {
+            status: newStatus,
+            tracking_number: trackingNumber || undefined,
+          },
           withCredentials: true,
-        }
+        },
       );
       toast.success("Order status updated");
       setDialogOpen(false);
@@ -187,10 +199,15 @@ const AdminOrders = () => {
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 -ml-2"
+              >
                 <Menu className="w-6 h-6" />
               </button>
-              <h2 className="font-serif text-xl font-semibold text-gray-900">Orders</h2>
+              <h2 className="font-serif text-xl font-semibold text-gray-900">
+                Orders
+              </h2>
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]" data-testid="status-filter">
@@ -216,53 +233,83 @@ const AdminOrders = () => {
           ) : orders.length === 0 ? (
             <div className="text-center py-16">
               <ShoppingBag className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-              <p className="text-gray-500">Orders will appear here when customers make purchases.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No orders found
+              </h3>
+              <p className="text-gray-500">
+                Orders will appear here when customers make purchases.
+              </p>
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Order ID</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Customer</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Items</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Total</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Payment</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Status</th>
-                    <th className="text-right px-6 py-4 text-sm font-medium text-gray-500">Actions</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Order ID
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Customer
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Items
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Total
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Payment
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Status
+                    </th>
+                    <th className="text-right px-6 py-4 text-sm font-medium text-gray-500">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {orders.map((order) => (
                     <tr key={order.order_id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900">{order.order_id}</p>
+                        <p className="font-medium text-gray-900">
+                          {order.order_id}
+                        </p>
                         <p className="text-xs text-gray-500">
                           {new Date(order.created_at).toLocaleDateString()}
                         </p>
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-gray-900">{order.customer_name}</p>
-                        <p className="text-sm text-gray-500">{order.customer_phone}</p>
+                        <p className="text-sm text-gray-500">
+                          {order.customer_phone}
+                        </p>
                       </td>
                       <td className="px-6 py-4 text-gray-600">
-                        {order.items?.reduce((sum, item) => sum + item.quantity, 0)} items
+                        {order.items?.reduce(
+                          (sum, item) => sum + item.quantity,
+                          0,
+                        )}{" "}
+                        items
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-900">
                         {formatPrice(order.total)}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.payment_status === "paid"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            order.payment_status === "paid"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
                           {order.payment_status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusClass(order.status)}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusClass(order.status)}`}
+                        >
                           {order.status}
                         </span>
                       </td>
@@ -308,14 +355,28 @@ const AdminOrders = () => {
                 <div>
                   <p className="text-sm text-gray-500">Customer</p>
                   <p className="font-medium">{selectedOrder.customer_name}</p>
-                  <p className="text-sm text-gray-500">{selectedOrder.customer_phone}</p>
-                  <p className="text-sm text-gray-500">{selectedOrder.customer_email}</p>
+                  <p className="text-sm text-gray-500">
+                    {selectedOrder.customer_phone}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {selectedOrder.customer_email}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Delivery</p>
                   <p className="font-medium capitalize">
                     {selectedOrder.delivery_method?.replace("_", " ")}
                   </p>
+                  {selectedOrder.pickup_agent_id && (
+                    <p className="text-sm text-gray-500">
+                      Agent ID: {selectedOrder.pickup_agent_id}
+                    </p>
+                  )}
+                  {selectedOrder.delivery_address?.address && (
+                    <p className="text-sm text-gray-500">
+                      {selectedOrder.delivery_address.address}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -324,7 +385,10 @@ const AdminOrders = () => {
                 <p className="text-sm font-medium text-gray-500 mb-3">Items</p>
                 <div className="space-y-3">
                   {selectedOrder.items?.map((item, index) => (
-                    <div key={index} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+                    >
                       <img
                         src={item.image || "https://via.placeholder.com/50"}
                         alt=""
@@ -338,7 +402,9 @@ const AdminOrders = () => {
                           {item.color && ` • ${item.color}`}
                         </p>
                       </div>
-                      <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                      <p className="font-medium">
+                        {formatPrice(item.price * item.quantity)}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -363,9 +429,14 @@ const AdminOrders = () => {
               {/* Update Status */}
               <div className="border-t pt-4 space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Update Status</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Update Status
+                  </label>
                   <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger className="mt-1" data-testid="update-status-select">
+                    <SelectTrigger
+                      className="mt-1"
+                      data-testid="update-status-select"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -379,7 +450,9 @@ const AdminOrders = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Tracking Number</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Tracking Number
+                  </label>
                   <Input
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value)}

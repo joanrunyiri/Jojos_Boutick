@@ -20,7 +20,13 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -64,7 +70,18 @@ const AdminProducts = () => {
   ];
 
   const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
-  const colors = ["Black", "White", "Red", "Blue", "Green", "Pink", "Beige", "Brown", "Navy", "Grey"];
+  const colors = [
+    "Black",
+    "White",
+    "Red",
+    "Blue",
+    "Green",
+    "Pink",
+    "Beige",
+    "Brown",
+    "Navy",
+    "Grey",
+  ];
 
   useEffect(() => {
     fetchProducts();
@@ -72,7 +89,9 @@ const AdminProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API}/products?limit=100`, { withCredentials: true });
+      const response = await axios.get(`${API}/products?limit=100`, {
+        withCredentials: true,
+      });
       setProducts(response.data.products);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -89,7 +108,14 @@ const AdminProducts = () => {
         description: product.description,
         price: product.price.toString(),
         category: product.category,
-        images: product.images?.length > 0 ? product.images : [""],
+
+        images:
+          product.images?.length > 0
+            ? product.images.map((img) =>
+                typeof img === "string" ? { color: "", url: img } : img,
+              )
+            : [],
+
         sizes: product.sizes || [],
         colors: product.colors || [],
         stock: product.stock?.toString() || "0",
@@ -125,7 +151,7 @@ const AdminProducts = () => {
         description: formData.description,
         price: parseFloat(formData.price),
         category: formData.category,
-        images: formData.images.filter((img) => img.trim()),
+        images: formData.images.filter((img) => img.url?.trim()),
         sizes: formData.sizes,
         colors: formData.colors,
         stock: parseInt(formData.stock) || 0,
@@ -133,12 +159,18 @@ const AdminProducts = () => {
       };
 
       if (editingProduct) {
-        await axios.put(`${API}/admin/products/${editingProduct.product_id}`, data, {
-          withCredentials: true,
-        });
+        await axios.put(
+          `${API}/admin/products/${editingProduct.product_id}`,
+          data,
+          {
+            withCredentials: true,
+          },
+        );
         toast.success("Product updated");
       } else {
-        await axios.post(`${API}/admin/products`, data, { withCredentials: true });
+        await axios.post(`${API}/admin/products`, data, {
+          withCredentials: true,
+        });
         toast.success("Product created");
       }
 
@@ -155,7 +187,9 @@ const AdminProducts = () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      await axios.delete(`${API}/admin/products/${productId}`, { withCredentials: true });
+      await axios.delete(`${API}/admin/products/${productId}`, {
+        withCredentials: true,
+      });
       toast.success("Product deleted");
       fetchProducts();
     } catch (error) {
@@ -188,7 +222,7 @@ const AdminProducts = () => {
       minimumFractionDigits: 0,
     }).format(price);
   };
-
+  console.log(products);
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
@@ -257,10 +291,15 @@ const AdminProducts = () => {
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 -ml-2"
+              >
                 <Menu className="w-6 h-6" />
               </button>
-              <h2 className="font-serif text-xl font-semibold text-gray-900">Products</h2>
+              <h2 className="font-serif text-xl font-semibold text-gray-900">
+                Products
+              </h2>
             </div>
             <button
               onClick={() => handleOpenDialog()}
@@ -281,9 +320,16 @@ const AdminProducts = () => {
           ) : products.length === 0 ? (
             <div className="text-center py-16">
               <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No products yet</h3>
-              <p className="text-gray-500 mb-6">Add your first product to get started.</p>
-              <button onClick={() => handleOpenDialog()} className="btn-primary">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No products yet
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Add your first product to get started.
+              </p>
+              <button
+                onClick={() => handleOpenDialog()}
+                className="btn-primary"
+              >
                 Add Product
               </button>
             </div>
@@ -292,12 +338,24 @@ const AdminProducts = () => {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Product</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Category</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Price</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Stock</th>
-                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">Featured</th>
-                    <th className="text-right px-6 py-4 text-sm font-medium text-gray-500">Actions</th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Product
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Category
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Price
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Stock
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">
+                      Featured
+                    </th>
+                    <th className="text-right px-6 py-4 text-sm font-medium text-gray-500">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -306,22 +364,35 @@ const AdminProducts = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
-                            src={product.images?.[0] || "https://via.placeholder.com/50"}
+                            src={
+                              product.images[0]?.url ||
+                              "https://via.placeholder.com/50"
+                            }
                             alt=""
                             className="w-12 h-12 rounded-lg object-cover"
                           />
                           <div>
-                            <p className="font-medium text-gray-900">{product.name}</p>
-                            <p className="text-sm text-gray-500 line-clamp-1">{product.description}</p>
+                            <p className="font-medium text-gray-900">
+                              {product.name}
+                            </p>
+                            <p className="text-sm text-gray-500 line-clamp-1">
+                              {product.description}
+                            </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="capitalize text-gray-600">{product.category?.replace("_", " ")}</span>
+                        <span className="capitalize text-gray-600">
+                          {product.category?.replace("_", " ")}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{formatPrice(product.price)}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {formatPrice(product.price)}
+                      </td>
                       <td className="px-6 py-4">
-                        <span className={`${product.stock <= 5 ? "text-red-600" : "text-gray-600"}`}>
+                        <span
+                          className={`${product.stock <= 5 ? "text-red-600" : "text-gray-600"}`}
+                        >
                           {product.stock}
                         </span>
                       </td>
@@ -363,7 +434,9 @@ const AdminProducts = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingProduct ? "Edit Product" : "Add Product"}</DialogTitle>
+            <DialogTitle>
+              {editingProduct ? "Edit Product" : "Add Product"}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
@@ -373,7 +446,9 @@ const AdminProducts = () => {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="mt-1"
                   data-testid="product-name-input"
                 />
@@ -385,7 +460,9 @@ const AdminProducts = () => {
                   id="price"
                   type="number"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
                   className="mt-1"
                   data-testid="product-price-input"
                 />
@@ -397,7 +474,9 @@ const AdminProducts = () => {
                   id="stock"
                   type="number"
                   value={formData.stock}
-                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, stock: e.target.value })
+                  }
                   className="mt-1"
                   data-testid="product-stock-input"
                 />
@@ -407,9 +486,14 @@ const AdminProducts = () => {
                 <Label htmlFor="category">Category</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, category: value })
+                  }
                 >
-                  <SelectTrigger className="mt-1" data-testid="product-category-select">
+                  <SelectTrigger
+                    className="mt-1"
+                    data-testid="product-category-select"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -427,14 +511,42 @@ const AdminProducts = () => {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="mt-1"
                   rows={3}
                   data-testid="product-description-input"
                 />
               </div>
-
               <div className="col-span-2">
+                <Label>Product Images by Color</Label>
+                <div className="space-y-3 mt-2">
+                  {formData.colors.map((color) => (
+                    <div key={color} className="flex items-center gap-3">
+                      <span className="w-20 text-sm font-medium">{color}:</span>
+                      <Input
+                        value={
+                          formData.images.find((img) => img.color === color)
+                            ?.url || ""
+                        }
+                        onChange={(e) => {
+                          const newImages = formData.images.filter(
+                            (img) => img.color !== color,
+                          );
+                          if (e.target.value.trim()) {
+                            newImages.push({ color, url: e.target.value });
+                          }
+                          setFormData({ ...formData, images: newImages });
+                        }}
+                        placeholder={`Image URL for ${color}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* <div className="col-span-2">
                 <Label>Image URL</Label>
                 <Input
                   value={formData.images[0]}
@@ -443,7 +555,7 @@ const AdminProducts = () => {
                   placeholder="https://..."
                   data-testid="product-image-input"
                 />
-              </div>
+              </div> */}
 
               <div className="col-span-2">
                 <Label>Sizes</Label>
@@ -490,17 +602,27 @@ const AdminProducts = () => {
                 <Switch
                   id="featured"
                   checked={formData.is_featured}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, is_featured: checked })
+                  }
                 />
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="btn-outline">
+            <button
+              onClick={() => setDialogOpen(false)}
+              className="btn-outline"
+            >
               Cancel
             </button>
-            <button onClick={handleSave} disabled={saving} className="btn-primary" data-testid="save-product-btn">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="btn-primary"
+              data-testid="save-product-btn"
+            >
               {saving ? "Saving..." : "Save Product"}
             </button>
           </DialogFooter>

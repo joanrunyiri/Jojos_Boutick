@@ -76,7 +76,7 @@ const HomePage = () => {
                 Elegance <br />with <span className="text-[#BC9F8B]">Edge</span>
               </h1>
               <p className="text-lg text-[#7D7D7D] leading-relaxed mb-8 max-w-md">
-                Discover curated fashion pieces that blend sophistication with modern Kenyan style. 
+                Discover curated fashion pieces that blend sophistication with modern style. 
                 Every piece tells a story of elegance.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">

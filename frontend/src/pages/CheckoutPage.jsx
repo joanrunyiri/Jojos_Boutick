@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Truck, CreditCard, Phone, ChevronRight, CheckCircle } from "lucide-react";
+import {
+  MapPin,
+  Truck,
+  CreditCard,
+  Phone,
+  ChevronRight,
+  CheckCircle,
+} from "lucide-react";
 import axios from "axios";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -23,8 +30,9 @@ const CheckoutPage = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pickupAgents, setPickupAgents] = useState([]);
+  const [agentSearch, setAgentSearch] = useState("");
   const [orderId, setOrderId] = useState(searchParams.get("order_id") || null);
-  
+  console.log(pickupAgents);
   // Form State
   const [customerName, setCustomerName] = useState(user?.name || "");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -37,12 +45,25 @@ const CheckoutPage = () => {
 
   const deliveryFee = deliveryMethod === "pickup_mtaani" ? 200 : 350;
   const total = cartTotal + deliveryFee;
-
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await axios.get(`${API}/delivery/pickup-mtaani/agents`);
-        setPickupAgents(response.data.agents);
+        const response = await axios.get(
+          `${API}/delivery/pickup-mtaani/agents`,
+        );
+        const agentList = response.data.agents?.data || [];
+        setPickupAgents(
+          agentList.map((agent) => ({
+            agent_id: String(agent.id),
+            name: agent.business_name,
+            location:
+              agent.loc?.name ||
+              agent.loc?.description ||
+              "Location not specified",
+            area: "",
+            zone: "",
+          })),
+        );
       } catch (error) {
         console.error("Error fetching agents:", error);
       }
@@ -103,7 +124,7 @@ const CheckoutPage = () => {
           customer_name: customerName,
           notes,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setOrderId(response.data.order_id);
       setStep(3);
@@ -121,7 +142,7 @@ const CheckoutPage = () => {
       const response = await axios.post(
         `${API}/payments/stripe/checkout?order_id=${orderId}&origin_url=${encodeURIComponent(originUrl)}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       window.location.href = response.data.checkout_url;
     } catch (error) {
@@ -141,10 +162,12 @@ const CheckoutPage = () => {
       const response = await axios.post(
         `${API}/payments/mpesa/stk-push?order_id=${orderId}&phone_number=${mpesaPhone}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
-      toast.success(response.data.message || "Check your phone for M-Pesa prompt");
-      
+      toast.success(
+        response.data.message || "Check your phone for M-Pesa prompt",
+      );
+
       // Poll for payment status
       let attempts = 0;
       const checkInterval = setInterval(async () => {
@@ -152,7 +175,7 @@ const CheckoutPage = () => {
         try {
           const statusRes = await axios.get(
             `${API}/payments/mpesa/status/${response.data.checkout_request_id}`,
-            { withCredentials: true }
+            { withCredentials: true },
           );
           if (statusRes.data.status === "paid") {
             clearInterval(checkInterval);
@@ -168,7 +191,9 @@ const CheckoutPage = () => {
         }
       }, 3000);
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to initiate M-Pesa payment");
+      toast.error(
+        error.response?.data?.detail || "Failed to initiate M-Pesa payment",
+      );
       setLoading(false);
     }
   };
@@ -214,12 +239,16 @@ const CheckoutPage = () => {
                   >
                     {step > s.num ? <CheckCircle className="w-5 h-5" /> : s.num}
                   </div>
-                  <span className={`hidden sm:block ${step >= s.num ? "text-[#4A4A4A]" : "text-[#7D7D7D]"}`}>
+                  <span
+                    className={`hidden sm:block ${step >= s.num ? "text-[#4A4A4A]" : "text-[#7D7D7D]"}`}
+                  >
                     {s.label}
                   </span>
                 </div>
                 {i < 2 && (
-                  <div className={`flex-1 h-1 mx-4 rounded ${step > s.num ? "bg-[#BC9F8B]" : "bg-[#E5E0DC]"}`} />
+                  <div
+                    className={`flex-1 h-1 mx-4 rounded ${step > s.num ? "bg-[#BC9F8B]" : "bg-[#E5E0DC]"}`}
+                  />
                 )}
               </React.Fragment>
             ))}
@@ -261,7 +290,9 @@ const CheckoutPage = () => {
                         placeholder="254XXXXXXXXX"
                         data-testid="checkout-phone"
                       />
-                      <p className="text-xs text-[#7D7D7D] mt-1">Format: 254XXXXXXXXX (e.g., 254712345678)</p>
+                      <p className="text-xs text-[#7D7D7D] mt-1">
+                        Format: 254XXXXXXXXX (e.g., 254712345678)
+                      </p>
                     </div>
                   </div>
                   <button
@@ -288,7 +319,10 @@ const CheckoutPage = () => {
                       <Truck className="w-5 h-5 text-[#BC9F8B]" />
                       Delivery Method
                     </h2>
-                    <RadioGroup value={deliveryMethod} onValueChange={setDeliveryMethod}>
+                    <RadioGroup
+                      value={deliveryMethod}
+                      onValueChange={setDeliveryMethod}
+                    >
                       <div
                         className={`delivery-card p-4 rounded-xl cursor-pointer ${
                           deliveryMethod === "pickup_mtaani" ? "selected" : ""
@@ -299,7 +333,10 @@ const CheckoutPage = () => {
                           <RadioGroupItem value="pickup_mtaani" id="pickup" />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <Label htmlFor="pickup" className="font-medium cursor-pointer">
+                              <Label
+                                htmlFor="pickup"
+                                className="font-medium cursor-pointer"
+                              >
                                 Pick Up Mtaani
                               </Label>
                               <span className="w-2 h-2 rounded-full bg-[#FCDA45]"></span>
@@ -323,7 +360,10 @@ const CheckoutPage = () => {
                         <div className="flex items-start gap-3">
                           <RadioGroupItem value="doorstep" id="doorstep" />
                           <div className="flex-1">
-                            <Label htmlFor="doorstep" className="font-medium cursor-pointer">
+                            <Label
+                              htmlFor="doorstep"
+                              className="font-medium cursor-pointer"
+                            >
                               Doorstep Delivery
                             </Label>
                             <p className="text-sm text-[#7D7D7D] mt-1">
@@ -345,28 +385,52 @@ const CheckoutPage = () => {
                         <MapPin className="w-5 h-5 text-[#BC9F8B]" />
                         Select Pickup Location
                       </h3>
+                      <input
+                        type="text"
+                        placeholder="Search locations..."
+                        onChange={(e) => setAgentSearch(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-[#E5E0DC] rounded-lg mb-3 focus:outline-none focus:border-[#BC9F8B] text-[#4A4A4A] placeholder:text-[#BC9F8B]/50"
+                      />
                       <div className="space-y-3 max-h-64 overflow-y-auto">
-                        {pickupAgents.map((agent) => (
-                          <div
-                            key={agent.agent_id}
-                            onClick={() => setSelectedAgent(agent)}
-                            className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                              selectedAgent?.agent_id === agent.agent_id
-                                ? "border-[#BC9F8B] bg-[#FDF6F0]"
-                                : "border-[#E5E0DC] hover:border-[#BC9F8B]"
-                            }`}
-                            data-testid={`agent-${agent.agent_id}`}
-                          >
-                            <p className="font-medium text-[#4A4A4A]">{agent.name}</p>
-                            <p className="text-sm text-[#7D7D7D]">{agent.location}</p>
-                            <p className="text-xs text-[#BC9F8B]">{agent.area}, {agent.zone}</p>
-                          </div>
-                        ))}
+                        {pickupAgents
+                          .filter(
+                            (agent) =>
+                              agent.name
+                                .toLowerCase()
+                                .includes(agentSearch?.toLowerCase() || "") ||
+                              agent.location
+                                .toLowerCase()
+                                .includes(agentSearch?.toLowerCase() || ""),
+                          )
+                          .map((agent) => (
+                            <div
+                              key={agent.agent_id}
+                              onClick={() => setSelectedAgent(agent)}
+                              className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                                selectedAgent?.agent_id === agent.agent_id
+                                  ? "border-[#BC9F8B] bg-[#FDF6F0]"
+                                  : "border-[#E5E0DC] hover:border-[#BC9F8B]"
+                              }`}
+                              data-testid={`agent-${agent.agent_id}`}
+                            >
+                              <p className="font-medium text-[#4A4A4A]">
+                                {agent.name}
+                              </p>
+                              <p className="text-sm text-[#7D7D7D]">
+                                {agent.location}
+                              </p>
+                              <p className="text-xs text-[#BC9F8B]">
+                                {agent.area}, {agent.zone}
+                              </p>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   ) : (
                     <div className="bg-white rounded-2xl p-6 border border-[#E5E0DC]">
-                      <h3 className="font-medium text-[#4A4A4A] mb-4">Delivery Address</h3>
+                      <h3 className="font-medium text-[#4A4A4A] mb-4">
+                        Delivery Address
+                      </h3>
                       <Textarea
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
@@ -380,7 +444,9 @@ const CheckoutPage = () => {
 
                   {/* Notes */}
                   <div className="bg-white rounded-2xl p-6 border border-[#E5E0DC]">
-                    <h3 className="font-medium text-[#4A4A4A] mb-4">Order Notes (Optional)</h3>
+                    <h3 className="font-medium text-[#4A4A4A] mb-4">
+                      Order Notes (Optional)
+                    </h3>
                     <Textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
@@ -392,10 +458,7 @@ const CheckoutPage = () => {
                   </div>
 
                   <div className="flex gap-4">
-                    <button
-                      onClick={() => setStep(1)}
-                      className="btn-outline"
-                    >
+                    <button onClick={() => setStep(1)} className="btn-outline">
                       Back
                     </button>
                     <button
@@ -423,7 +486,10 @@ const CheckoutPage = () => {
                     Payment Method
                   </h2>
 
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={setPaymentMethod}
+                  >
                     <div
                       className={`delivery-card p-4 rounded-xl cursor-pointer ${
                         paymentMethod === "mpesa" ? "selected" : ""
@@ -433,10 +499,15 @@ const CheckoutPage = () => {
                       <div className="flex items-center gap-3">
                         <RadioGroupItem value="mpesa" id="mpesa" />
                         <div>
-                          <Label htmlFor="mpesa" className="font-medium cursor-pointer mpesa-green">
+                          <Label
+                            htmlFor="mpesa"
+                            className="font-medium cursor-pointer mpesa-green"
+                          >
                             M-Pesa
                           </Label>
-                          <p className="text-sm text-[#7D7D7D]">Pay with M-Pesa mobile money</p>
+                          <p className="text-sm text-[#7D7D7D]">
+                            Pay with M-Pesa mobile money
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -450,10 +521,15 @@ const CheckoutPage = () => {
                       <div className="flex items-center gap-3">
                         <RadioGroupItem value="stripe" id="stripe" />
                         <div>
-                          <Label htmlFor="stripe" className="font-medium cursor-pointer">
+                          <Label
+                            htmlFor="stripe"
+                            className="font-medium cursor-pointer"
+                          >
                             Credit/Debit Card
                           </Label>
-                          <p className="text-sm text-[#7D7D7D]">Visa, Mastercard, AMEX</p>
+                          <p className="text-sm text-[#7D7D7D]">
+                            Visa, Mastercard, AMEX
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -491,21 +567,35 @@ const CheckoutPage = () => {
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-[#FDF6F0] rounded-2xl p-6 sticky top-28">
-                <h2 className="font-serif text-xl text-[#4A4A4A] mb-6">Order Summary</h2>
+                <h2 className="font-serif text-xl text-[#4A4A4A] mb-6">
+                  Order Summary
+                </h2>
 
                 {/* Items */}
                 <div className="space-y-4 mb-6 max-h-48 overflow-y-auto">
                   {cart.items?.map((item) => (
-                    <div key={`${item.product_id}-${item.size}`} className="flex gap-3">
+                    <div
+                      key={`${item.product_id}-${item.size}`}
+                      className="flex gap-3"
+                    >
                       <img
-                        src={item.image || "https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=100"}
+                        src={
+                          item.image ||
+                          "https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=100"
+                        }
                         alt={item.name}
                         className="w-16 h-20 object-cover rounded-lg"
                       />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-[#4A4A4A] line-clamp-1">{item.name}</p>
-                        <p className="text-xs text-[#7D7D7D]">Qty: {item.quantity}</p>
-                        <p className="text-sm font-medium text-[#4A4A4A]">{formatPrice(item.price * item.quantity)}</p>
+                        <p className="text-sm font-medium text-[#4A4A4A] line-clamp-1">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-[#7D7D7D]">
+                          Qty: {item.quantity}
+                        </p>
+                        <p className="text-sm font-medium text-[#4A4A4A]">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
                       </div>
                     </div>
                   ))}
