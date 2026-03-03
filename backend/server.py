@@ -261,7 +261,8 @@ async def require_admin(request: Request) -> dict:
 async def google_auth_callback(code: str, request: Request):
     """Exchange Google auth code for user data"""
     try:
-        redirect_uri = str(request.base_url).rstrip("/").replace("8001", "3000") + "/auth/callback"
+        # redirect_uri = str(request.base_url).rstrip("/").replace("8001", "3000") + "/auth/callback"
+        redirect_uri = os.environ.get("FRONTEND_URL") + "/auth/callback"
         
         # Exchange code for tokens
         async with httpx.AsyncClient() as http_client:
@@ -319,7 +320,7 @@ async def google_auth_callback(code: str, request: Request):
         user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
         
         # Redirect to frontend with session
-        frontend_url = str(request.base_url).rstrip("/").replace("8001", "3000")
+        frontend_url = redirect_uri = os.environ.get("FRONTEND_URL") 
         response = JSONResponse(content=user_doc)
         response.set_cookie(
             key="session_token",
