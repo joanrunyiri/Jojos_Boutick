@@ -335,7 +335,6 @@ async def google_auth_callback(code: str, request: Request):
             "expires_at": expires_at.isoformat(),
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
-        logger.info(f"Session inserted: {result.inserted_id}")  # ADD THIS
 
 
         # Redirect back to the frontend.
