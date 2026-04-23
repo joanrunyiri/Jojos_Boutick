@@ -259,11 +259,25 @@ async def require_admin(request: Request) -> dict:
 # ============ AUTH ENDPOINTS ============
 @api_router.get("/auth/callback")
 async def google_auth_callback(code: str, request: Request):
-    """Exchange Google auth code for user data"""
+    """Exchange Google auth code for user data and redirect to frontend"""
+    from fastapi.responses import RedirectResponse
+
+    is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    frontend_url = os.environ.get("FRONTEND_URL", "https://jojos-boutick.vercel.app").rstrip("/")
+    
+    if not is_https:
+        frontend_url = "http://localhost:3000"
+
     try:
-        # redirect_uri = str(request.base_url).rstrip("/").replace("8001", "3000") + "/auth/callback"
-        redirect_uri = os.environ.get("FRONTEND_URL") + "/auth/callback"
-        
+        # The redirect_uri sent to Google must EXACTLY match what the frontend used
+        # when initiating the OAuth flow: window.location.origin + '/auth/callback'
+        # For local dev: frontend is localhost:3000
+        # For production: the Vercel frontend URL
+        if is_https:
+            redirect_uri = f"{frontend_url}/auth/callback"
+        else:
+            redirect_uri = "http://localhost:3000/auth/callback"
+
         # Exchange code for tokens
         async with httpx.AsyncClient() as http_client:
             token_response = await http_client.post(
@@ -277,17 +291,21 @@ async def google_auth_callback(code: str, request: Request):
                 }
             )
             tokens = token_response.json()
-            
+
+            if "access_token" not in tokens:
+                logger.error(f"Google auth error tokens: {tokens}")
+                return RedirectResponse(url=f"{frontend_url}/?auth=error", status_code=302)
+
             # Get user info
             user_response = await http_client.get(
                 "https://www.googleapis.com/oauth2/v2/userinfo",
                 headers={"Authorization": f"Bearer {tokens['access_token']}"}
             )
             user_data = user_response.json()
-        
+
         # Check if user exists
         existing_user = await db.users.find_one({"email": user_data["email"]}, {"_id": 0})
-        
+
         if existing_user:
             user_id = existing_user["user_id"]
             await db.users.update_one(
@@ -304,11 +322,12 @@ async def google_auth_callback(code: str, request: Request):
                 "is_admin": False,
                 "created_at": datetime.now(timezone.utc).isoformat(),
             })
-        
+
         # Create session
         session_token = uuid.uuid4().hex
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
         
+
         await db.user_sessions.insert_one({
             "session_id": f"sess_{uuid.uuid4().hex}",
             "user_id": user_id,
@@ -316,26 +335,31 @@ async def google_auth_callback(code: str, request: Request):
             "expires_at": expires_at.isoformat(),
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
-        
-        user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
-        
-        # Redirect to frontend with session
-        frontend_url = redirect_uri = os.environ.get("FRONTEND_URL") 
-        response = JSONResponse(content=user_doc)
+        logger.info(f"Session inserted: {result.inserted_id}")  # ADD THIS
+
+
+        # Redirect back to the frontend.
+        # On localhost the cookie won't persist cross-port (8001 → 3000),
+        # so we pass the session_token in the URL; the frontend stores it and
+        # uses it as an Authorization Bearer header fallback.
+        # On production (HTTPS same domain) the cookie works fine too.
+        redirect_target = f"{frontend_url}/?session_token={session_token}"
+        logger.info(f"Redirecting to: {redirect_target}")
+        response = RedirectResponse(url=redirect_target, status_code=302)
         response.set_cookie(
             key="session_token",
             value=session_token,
             httponly=True,
-            secure=False,  # Set True in production
-            samesite="lax",
+            secure=is_https,
+            samesite="none" if is_https else "lax",
             path="/",
             max_age=7 * 24 * 60 * 60,
         )
         return response
-        
+
     except Exception as e:
         logger.error(f"Google auth error: {e}")
-        raise HTTPException(status_code=500, detail="Authentication failed")
+        return RedirectResponse(url=f"{frontend_url}/?auth=error", status_code=302)
 # @api_router.get("/auth/session")
 # async def exchange_session(session_id: str, request: Request):
 #     """Exchange Emergent Auth session_id for user data and set cookie"""
@@ -1385,3 +1409,8 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("server:app", host="0.0.0.0", port=8001, reload=True)

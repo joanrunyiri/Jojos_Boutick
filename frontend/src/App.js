@@ -26,13 +26,27 @@ const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
 
+// Helper to get auth headers (cookie OR localStorage token fallback for localhost)
+export const getAuthConfig = () => {
+  const token = localStorage.getItem('session_token');
+  return {
+    withCredentials: true,
+    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = async () => {
+  const checkAuth = async (tokenOverride) => {
     try {
-      const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
+      const token = tokenOverride || localStorage.getItem('session_token');
+      const config = {
+        withCredentials: true,
+        ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+      };
+      const response = await axios.get(`${API}/auth/me`, config);
       setUser(response.data);
     } catch (error) {
       setUser(null);
@@ -42,19 +56,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    checkAuth();
+    // Check if Google redirected back with ?session_token= in the URL
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('session_token');
+    if (urlToken) {
+      localStorage.setItem('session_token', urlToken);
+      // Remove token from URL without page reload
+      window.history.replaceState({}, '', window.location.pathname);
+      checkAuth(urlToken);
+    } else {
+      checkAuth();
+    }
   }, []);
 
   const login = () => {
     // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
     const redirectUrl = window.location.origin + '/auth/callback';
-     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=openid%20email%20profile`;
-    // window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=openid%20email%20profile`;
   };
 
   const logout = async () => {
     try {
-      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
+      await axios.post(`${API}/auth/logout`, {}, getAuthConfig());
+      localStorage.removeItem('session_token');
       setUser(null);
     } catch (error) {
       console.error("Logout error:", error);
@@ -114,9 +138,9 @@ export const CartProvider = ({ children }) => {
       const response = await axios.put(
         `${API}/cart/update`,
         null,
-        { 
+        {
           params: { product_id: productId, quantity, size, color },
-          withCredentials: true 
+          withCredentials: true
         }
       );
       setCart(response.data);
@@ -132,9 +156,9 @@ export const CartProvider = ({ children }) => {
     try {
       const response = await axios.delete(
         `${API}/cart/remove/${productId}`,
-        { 
+        {
           params: { size, color },
-          withCredentials: true 
+          withCredentials: true
         }
       );
       setCart(response.data);
@@ -158,13 +182,13 @@ export const CartProvider = ({ children }) => {
   const cartTotal = cart.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
 
   return (
-    <CartContext.Provider value={{ 
-      cart, 
-      loading, 
-      addToCart, 
-      updateCartItem, 
-      removeFromCart, 
-      clearCart, 
+    <CartContext.Provider value={{
+      cart,
+      loading,
+      addToCart,
+      updateCartItem,
+      removeFromCart,
+      clearCart,
       fetchCart,
       cartItemCount,
       cartTotal
@@ -188,15 +212,13 @@ const AuthCallback = () => {
     const processAuth = async () => {
       const params = new URLSearchParams(location.search);
       const code = params.get('code');
-      
+
       if (code) {
         try {
-          const response = await axios.get(
-            `${API}/auth/callback?code=${code}`,
-            { withCredentials: true }
-          );
-          setUser(response.data);
-          navigate('/', { replace: true });
+          // We must use window.location (full browser navigation) to the backend
+          // so the browser treats it as a same-site request and can receive the
+          // Set-Cookie header. A cross-origin axios call drops SameSite=Lax cookies.
+          window.location.href = `${API}/auth/callback?code=${encodeURIComponent(code)}`;
         } catch (error) {
           console.error("Auth callback error:", error);
           navigate('/', { replace: true });
@@ -231,7 +253,7 @@ const AuthCallback = () => {
 //     const processAuth = async () => {
 //       const hash = location.hash;
 //       const sessionIdMatch = hash.match(/session_id=([^&]+)/);
-      
+
 //       if (sessionIdMatch) {
 //         const sessionId = sessionIdMatch[1];
 //         try {
@@ -330,7 +352,7 @@ function AppRouter() {
       } />
       <Route path="/track" element={<TrackOrderPage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
-      
+
       {/* Admin Routes */}
       <Route path="/admin" element={
         <ProtectedRoute adminOnly>
@@ -347,7 +369,7 @@ function AppRouter() {
           <AdminOrders />
         </ProtectedRoute>
       } />
-      
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
