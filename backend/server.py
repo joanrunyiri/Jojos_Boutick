@@ -757,7 +757,42 @@ async def create_order(order_req: CreateOrderRequest, request: Request):
     
     # Calculate totals
     subtotal = sum(item["price"] * item["quantity"] for item in cart["items"])
+    
+    # Get live delivery fee
     delivery_fee = 200.0 if order_req.delivery_method == "pickup_mtaani" else 350.0
+    api_key = os.environ.get("PICKUPMTAANI_API_KEY")
+    if api_key:
+        try:
+            async with httpx.AsyncClient() as client:
+                if order_req.delivery_method == "pickup_mtaani" and order_req.pickup_agent_id:
+                    res = await client.get(
+                        "https://api.pickupmtaani.com/api/v1/delivery-charge/agent-package",
+                        params={
+                            "senderAgentID": int(SOURCE_AGENT_ID),
+                            "receiverAgentID": int(order_req.pickup_agent_id)
+                        },
+                        headers={"apiKey": api_key, "accept": "application/json"},
+                    )
+                    if res.status_code == 200:
+                        data = res.json()
+                        delivery_fee = float(data.get("data", {}).get("price") or 200.0)
+                elif order_req.delivery_method == "doorstep" and order_req.delivery_address:
+                    dest_id = order_req.delivery_address.get("destination_id")
+                    if dest_id:
+                        res = await client.get(
+                            "https://api.pickupmtaani.com/api/v1/delivery-charge/doorstep-package",
+                            params={
+                                "senderAgentID": int(SOURCE_AGENT_ID),
+                                "doorstepDestinationID": int(dest_id)
+                            },
+                            headers={"apiKey": api_key, "accept": "application/json"},
+                        )
+                        if res.status_code == 200:
+                            data = res.json()
+                            delivery_fee = float(data.get("data", {}).get("price") or 350.0)
+        except Exception as e:
+            logger.error(f"Error calculating live shipping during order creation: {e}")
+            
     total = subtotal + delivery_fee
     
     # Create order
@@ -1237,32 +1272,27 @@ async def get_mpesa_payment_status(checkout_request_id: str, request: Request):
 
 
 # ============ PICK UP MTAANI ENDPOINTS ============
+SOURCE_AGENT_ID = "605" # Vitahealth Chemist
+
 @api_router.get("/delivery/pickup-mtaani/agents")
 async def get_pickup_agents():
     """Get Pick Up Mtaani agent locations"""
     api_key = os.environ.get("PICKUPMTAANI_API_KEY")
     
     if not api_key:
-        # Return mock data if API key not configured
-        return {
-            "agents": [
-                {"agent_id": "agent_1", "name": "Westlands Agent", "location": "Westlands Mall", "area": "Westlands", "zone": "Nairobi"},
-                {"agent_id": "agent_2", "name": "CBD Agent", "location": "Kenyatta Avenue", "area": "CBD", "zone": "Nairobi"},
-                {"agent_id": "agent_3", "name": "Karen Agent", "location": "Karen Shopping Centre", "area": "Karen", "zone": "Nairobi"},
-                {"agent_id": "agent_4", "name": "Mombasa Road Agent", "location": "City Mall", "area": "Mombasa Road", "zone": "Nairobi"},
-                {"agent_id": "agent_5", "name": "Thika Road Agent", "location": "Garden City", "area": "Thika Road", "zone": "Nairobi"},
-            ],
-            "note": "Mock data - Configure PICKUPMTAANI_API_KEY for live data"
-        }
+        return {"agents": [], "error": "API key not configured"}
     
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 "https://api.pickupmtaani.com/api/v1/agents",
-                headers={"apiKey": api_key,"accept": "application/json"},
+                headers={"apiKey": api_key, "accept": "application/json"},
             )
             if response.status_code == 200:
-                return {"agents": response.json()}
+                data = response.json()
+                # Extract the list if it's nested in a 'data' field
+                agents_list = data.get("data", []) if isinstance(data, dict) else data
+                return {"agents": agents_list}
             else:
                 logger.error(f"Pick Up Mtaani API error: {response.status_code}")
                 return {"agents": [], "error": "Failed to fetch agents"}
@@ -1273,27 +1303,81 @@ async def get_pickup_agents():
 
 @api_router.get("/delivery/pickup-mtaani/charge")
 async def get_delivery_charge(destination_agent_id: str):
-    """Get delivery charge for Pick Up Mtaani"""
+    """Get delivery charge for Pick Up Mtaani (Agent to Agent)"""
     api_key = os.environ.get("PICKUPMTAANI_API_KEY")
     
     if not api_key:
-        # Return mock charge
         return {"delivery_fee": 200.0, "currency": "KES", "note": "Mock data"}
     
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 "https://api.pickupmtaani.com/api/v1/delivery-charge/agent-package",
-                params={"destination_agent_id": destination_agent_id},
-                headers={"Authorization": f"Bearer {api_key}"},
+                params={
+                    "senderAgentID": int(SOURCE_AGENT_ID),
+                    "receiverAgentID": int(destination_agent_id)
+                },
+                headers={"apiKey": api_key, "accept": "application/json"},
             )
             if response.status_code == 200:
-                return response.json()
+                data = response.json()
+                # The data is in data.price based on testing
+                fee = data.get("data", {}).get("price") or data.get("delivery_fee") or 200.0
+                return {"delivery_fee": float(fee), "currency": "KES", "details": data}
             else:
+                logger.warning(f"Pick Up Mtaani charge API returned {response.status_code}, using default")
                 return {"delivery_fee": 200.0, "currency": "KES"}
     except Exception as e:
         logger.error(f"Pick Up Mtaani charge error: {e}")
         return {"delivery_fee": 200.0, "currency": "KES"}
+
+
+@api_router.get("/delivery/doorstep/destinations")
+async def get_doorstep_destinations():
+    """Get Pick Up Mtaani doorstep delivery destinations"""
+    api_key = os.environ.get("PICKUPMTAANI_API_KEY")
+    if not api_key:
+        return {"destinations": []}
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.pickupmtaani.com/api/v1/locations/doorstep-destinations",
+                headers={"apiKey": api_key, "accept": "application/json"},
+            )
+            if response.status_code == 200:
+                data = response.json()
+                destinations = data.get("data", []) if isinstance(data, dict) else data
+                return {"destinations": destinations}
+            return {"destinations": []}
+    except Exception:
+        return {"destinations": []}
+
+
+@api_router.get("/delivery/doorstep/charge")
+async def get_doorstep_charge(destination_id: str):
+    """Get delivery charge for Doorstep Delivery"""
+    api_key = os.environ.get("PICKUPMTAANI_API_KEY")
+    if not api_key:
+        return {"delivery_fee": 350.0, "currency": "KES"}
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.pickupmtaani.com/api/v1/delivery-charge/doorstep-package",
+                params={
+                    "senderAgentID": int(SOURCE_AGENT_ID),
+                    "doorstepDestinationID": int(destination_id)
+                },
+                headers={"apiKey": api_key, "accept": "application/json"},
+            )
+            if response.status_code == 200:
+                data = response.json()
+                fee = data.get("data", {}).get("price") or data.get("delivery_fee") or 350.0
+                return {"delivery_fee": float(fee), "currency": "KES", "details": data}
+            return {"delivery_fee": 350.0, "currency": "KES"}
+    except Exception:
+        return {"delivery_fee": 350.0, "currency": "KES"}
 
 
 @api_router.get("/delivery/track/{tracking_number}")

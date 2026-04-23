@@ -7,7 +7,8 @@ import Footer from "@/components/layout/Footer";
 import { useCart, useAuth } from "@/App";
 
 const CartPage = () => {
-  const { cart, updateCartItem, removeFromCart, cartTotal, cartItemCount } = useCart();
+  const { cart, updateCartItem, removeFromCart, cartTotal, cartItemCount } =
+    useCart();
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
@@ -43,9 +44,17 @@ const CartPage = () => {
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-[#FDF6F0] flex items-center justify-center">
               <ShoppingBag className="w-10 h-10 text-[#BC9F8B]" />
             </div>
-            <h1 className="font-serif text-2xl text-[#4A4A4A] mb-3">Your Cart is Empty</h1>
-            <p className="text-[#7D7D7D] mb-6">Looks like you haven't added anything yet.</p>
-            <Link to="/shop" className="btn-primary inline-flex items-center gap-2" data-testid="continue-shopping-btn">
+            <h1 className="font-serif text-2xl text-[#4A4A4A] mb-3">
+              Your Cart is Empty
+            </h1>
+            <p className="text-[#7D7D7D] mb-6">
+              Looks like you haven't added anything yet.
+            </p>
+            <Link
+              to="/shop"
+              className="btn-primary inline-flex items-center gap-2"
+              data-testid="continue-shopping-btn"
+            >
               Continue Shopping
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -80,9 +89,15 @@ const CartPage = () => {
                     data-testid={`cart-item-${item.product_id}`}
                   >
                     {/* Image */}
-                    <Link to={`/product/${item.product_id}`} className="flex-shrink-0">
+                    <Link
+                      to={`/product/${item.product_id}`}
+                      className="flex-shrink-0"
+                    >
                       <img
-                        src={item.image || "https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=200"}
+                        src={
+                          item.image ||
+                          "https://images.unsplash.com/photo-1596484552993-aec4311d3381?w=200"
+                        }
                         alt={item.name}
                         className="w-24 h-32 object-cover rounded-lg"
                       />
@@ -113,7 +128,9 @@ const CartPage = () => {
                           >
                             <Minus className="w-4 h-4" />
                           </button>
-                          <span className="w-8 text-center">{item.quantity}</span>
+                          <span className="w-8 text-center">
+                            {item.quantity}
+                          </span>
                           <button
                             onClick={() => handleQuantityChange(item, 1)}
                             className="quantity-btn"
@@ -123,7 +140,13 @@ const CartPage = () => {
                           </button>
                         </div>
                         <button
-                          onClick={() => removeFromCart(item.product_id, item.size, item.color)}
+                          onClick={() =>
+                            removeFromCart(
+                              item.product_id,
+                              item.size,
+                              item.color,
+                            )
+                          }
                           className="text-[#7D7D7D] hover:text-[#E57373] transition-colors"
                           data-testid={`remove-${item.product_id}`}
                         >
@@ -147,7 +170,9 @@ const CartPage = () => {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-[#FDF6F0] rounded-2xl p-6 sticky top-28">
-                <h2 className="font-serif text-xl text-[#4A4A4A] mb-6">Order Summary</h2>
+                <h2 className="font-serif text-xl text-[#4A4A4A] mb-6">
+                  Order Summary
+                </h2>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-[#7D7D7D]">
@@ -156,7 +181,9 @@ const CartPage = () => {
                   </div>
                   <div className="flex justify-between text-[#7D7D7D]">
                     <span>Delivery</span>
-                    <span className="text-[#8DA399]">Calculated at checkout</span>
+                    <span className="text-[#8DA399]">
+                      Calculated at checkout
+                    </span>
                   </div>
                 </div>
 
@@ -177,17 +204,19 @@ const CartPage = () => {
 
                 {/* Payment Methods */}
                 <div className="mt-6 pt-6 border-t border-[#E5E0DC]">
-                  <p className="text-xs text-[#7D7D7D] text-center mb-3">We Accept</p>
+                  <p className="text-xs text-[#7D7D7D] text-center mb-3">
+                    We Accept
+                  </p>
                   <div className="flex items-center justify-center gap-3">
                     <span className="text-xs bg-white px-3 py-1 rounded border border-[#E5E0DC]">
                       M-Pesa
                     </span>
-                    <span className="text-xs bg-white px-3 py-1 rounded border border-[#E5E0DC]">
+                    {/* <span className="text-xs bg-white px-3 py-1 rounded border border-[#E5E0DC]">
                       Visa
                     </span>
                     <span className="text-xs bg-white px-3 py-1 rounded border border-[#E5E0DC]">
                       Mastercard
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               </div>

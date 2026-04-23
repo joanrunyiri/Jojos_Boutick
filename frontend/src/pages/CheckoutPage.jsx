@@ -42,8 +42,11 @@ const CheckoutPage = () => {
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("mpesa");
   const [mpesaPhone, setMpesaPhone] = useState("");
+  const [deliveryFee, setDeliveryFee] = useState(200);
+  const [doorstepDestinations, setDoorstepDestinations] = useState([]);
+  const [selectedDoorstepDest, setSelectedDoorstepDest] = useState(null);
+  const [fetchingFee, setFetchingFee] = useState(false);
 
-  const deliveryFee = deliveryMethod === "pickup_mtaani" ? 200 : 350;
   const total = cartTotal + deliveryFee;
   useEffect(() => {
     const fetchAgents = async () => {
@@ -51,25 +54,79 @@ const CheckoutPage = () => {
         const response = await axios.get(
           `${API}/delivery/pickup-mtaani/agents`,
         );
-        const agentList = response.data.agents?.data || [];
-        setPickupAgents(
-          agentList.map((agent) => ({
-            agent_id: String(agent.id),
-            name: agent.business_name,
-            location:
-              agent.loc?.name ||
-              agent.loc?.description ||
-              "Location not specified",
-            area: "",
-            zone: "",
-          })),
-        );
+        // Robust check for array data
+        let agentsData = [];
+        if (Array.isArray(response.data.agents)) {
+          agentsData = response.data.agents;
+        } else if (Array.isArray(response.data)) {
+          agentsData = response.data;
+        } else if (response.data?.agents?.data && Array.isArray(response.data.agents.data)) {
+          agentsData = response.data.agents.data;
+        }
+        
+        setPickupAgents(agentsData);
       } catch (error) {
         console.error("Error fetching agents:", error);
+        setPickupAgents([]);
       }
     };
+
+    const fetchDoorstepDestinations = async () => {
+      try {
+        const response = await axios.get(`${API}/delivery/doorstep/destinations`);
+        setDoorstepDestinations(response.data.destinations || []);
+      } catch (error) {
+        console.error("Error fetching doorstep destinations:", error);
+      }
+    };
+
     fetchAgents();
+    fetchDoorstepDestinations();
   }, []);
+
+  // Fetch Delivery Fee for Pickup Mtaani
+  useEffect(() => {
+    const fetchFee = async () => {
+      if (deliveryMethod === "pickup_mtaani" && selectedAgent) {
+        setFetchingFee(true);
+        try {
+          const response = await axios.get(
+            `${API}/delivery/pickup-mtaani/charge`,
+            { params: { destination_agent_id: selectedAgent.id } }
+          );
+          setDeliveryFee(response.data.delivery_fee);
+        } catch (error) {
+          setDeliveryFee(200);
+        } finally {
+          setFetchingFee(false);
+        }
+      }
+    };
+    fetchFee();
+  }, [selectedAgent, deliveryMethod]);
+
+  // Fetch Delivery Fee for Doorstep
+  useEffect(() => {
+    const fetchFee = async () => {
+      if (deliveryMethod === "doorstep" && selectedDoorstepDest) {
+        setFetchingFee(true);
+        try {
+          const response = await axios.get(
+            `${API}/delivery/doorstep/charge`,
+            { params: { destination_id: selectedDoorstepDest.id } }
+          );
+          setDeliveryFee(response.data.delivery_fee);
+        } catch (error) {
+          setDeliveryFee(350);
+        } finally {
+          setFetchingFee(false);
+        }
+      } else if (deliveryMethod === "doorstep" && !selectedDoorstepDest) {
+        setDeliveryFee(350);
+      }
+    };
+    fetchFee();
+  }, [selectedDoorstepDest, deliveryMethod]);
 
   useEffect(() => {
     if (user?.name && !customerName) {
@@ -118,8 +175,12 @@ const CheckoutPage = () => {
         `${API}/orders`,
         {
           delivery_method: deliveryMethod,
-          delivery_address: deliveryMethod === "doorstep" ? { address } : null,
-          pickup_agent_id: selectedAgent?.agent_id,
+          delivery_address: deliveryMethod === "doorstep" ? { 
+            address, 
+            destination_id: selectedDoorstepDest?.id,
+            destination_name: selectedDoorstepDest?.name 
+          } : null,
+          pickup_agent_id: selectedAgent?.id,
           customer_phone: customerPhone,
           customer_name: customerName,
           notes,
@@ -392,53 +453,76 @@ const CheckoutPage = () => {
                         className="w-full px-3 py-2 text-sm border border-[#E5E0DC] rounded-lg mb-3 focus:outline-none focus:border-[#BC9F8B] text-[#4A4A4A] placeholder:text-[#BC9F8B]/50"
                       />
                       <div className="space-y-3 max-h-64 overflow-y-auto">
-                        {pickupAgents
+                        {Array.isArray(pickupAgents) && pickupAgents
                           .filter(
                             (agent) =>
-                              agent.name
+                              (agent?.business_name || "")
                                 .toLowerCase()
                                 .includes(agentSearch?.toLowerCase() || "") ||
-                              agent.location
+                              ((agent?.loc?.name || agent?.loc?.description || ""))
                                 .toLowerCase()
                                 .includes(agentSearch?.toLowerCase() || ""),
                           )
                           .map((agent) => (
                             <div
-                              key={agent.agent_id}
+                              key={agent?.id}
                               onClick={() => setSelectedAgent(agent)}
                               className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                                selectedAgent?.agent_id === agent.agent_id
+                                selectedAgent?.id === agent?.id
                                   ? "border-[#BC9F8B] bg-[#FDF6F0]"
                                   : "border-[#E5E0DC] hover:border-[#BC9F8B]"
                               }`}
-                              data-testid={`agent-${agent.agent_id}`}
+                              data-testid={`agent-${agent?.id}`}
                             >
                               <p className="font-medium text-[#4A4A4A]">
-                                {agent.name}
+                                {agent?.business_name}
                               </p>
                               <p className="text-sm text-[#7D7D7D]">
-                                {agent.location}
-                              </p>
-                              <p className="text-xs text-[#BC9F8B]">
-                                {agent.area}, {agent.zone}
+                                {agent?.loc?.name || agent?.loc?.description || "Location details unavailable"}
                               </p>
                             </div>
                           ))}
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-white rounded-2xl p-6 border border-[#E5E0DC]">
-                      <h3 className="font-medium text-[#4A4A4A] mb-4">
-                        Delivery Address
+                    <div className="bg-white rounded-2xl p-6 border border-[#E5E0DC] space-y-4">
+                      <h3 className="font-medium text-[#4A4A4A] flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-[#BC9F8B]" />
+                        Doorstep Delivery
                       </h3>
-                      <Textarea
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Enter your full address..."
-                        className="input-base"
-                        rows={3}
-                        data-testid="delivery-address"
-                      />
+                      
+                      <div>
+                        <Label htmlFor="doorstep-dest">Town/Area *</Label>
+                        <select
+                          id="doorstep-dest"
+                          className="input-base w-full mt-1"
+                          value={selectedDoorstepDest?.id || ""}
+                          onChange={(e) => {
+                            const dest = doorstepDestinations.find(d => String(d.id) === e.target.value);
+                            setSelectedDoorstepDest(dest);
+                          }}
+                        >
+                          <option value="">Select your area...</option>
+                          {doorstepDestinations.map((dest) => (
+                            <option key={dest.id} value={dest.id}>
+                              {dest.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="address">Specific Address (House No, Street) *</Label>
+                        <Textarea
+                          id="address"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          placeholder="Example: Suit 4B, 12th Floor, Greenhouse Mall..."
+                          className="input-base mt-1"
+                          rows={3}
+                          data-testid="delivery-address"
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -608,7 +692,10 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex justify-between text-sm text-[#7D7D7D]">
                     <span>Delivery</span>
-                    <span>{formatPrice(deliveryFee)}</span>
+                    <span className="flex items-center gap-2">
+                      {fetchingFee && <span className="w-3 h-3 border-2 border-[#BC9F8B] border-t-transparent rounded-full animate-spin"></span>}
+                      {formatPrice(deliveryFee)}
+                    </span>
                   </div>
                 </div>
 

@@ -139,6 +139,23 @@
   --error-border: #E57373;
 }
 
+[data-sonner-toast] [data-close-button] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  right: 8px !important;
+  top: 8px !important;
+  left: auto !important;
+  transform: none !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E0DC !important;
+  color: #4A4A4A !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background-color: #FDF6F0 !important;
+  border-color: #BC9F8B !important;
+}
+
 /* Mobile menu animation */
 .mobile-menu-enter {
   transform: translateX(-100%);
