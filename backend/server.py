@@ -1389,10 +1389,6 @@ async def get_categories():
 async def health_check():
     return {"status": "healthy", "service": "Jojos Boutick API"}
 
-
-# Include the router
-app.include_router(api_router)
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -1400,6 +1396,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Include the router
+app.include_router(api_router)
+
+
 
 
 @app.on_event("shutdown")
