@@ -343,7 +343,6 @@ async def google_auth_callback(code: str, request: Request):
         # uses it as an Authorization Bearer header fallback.
         # On production (HTTPS same domain) the cookie works fine too.
         redirect_target = f"{frontend_url}/?session_token={session_token}"
-        logger.info(f"Redirecting to: {redirect_target}")
         response = RedirectResponse(url=redirect_target, status_code=302)
         response.set_cookie(
             key="session_token",
@@ -1108,7 +1107,6 @@ async def initiate_mpesa_payment(
             raise HTTPException(status_code=500, detail="Failed to initiate payment")
         
         result = response.json()
-        logger.info(f"CheckoutRequestID: {result}")
 
     if result.get("ResponseCode") != "0":
         raise HTTPException(
@@ -1159,7 +1157,6 @@ async def mpesa_callback(request: Request):
         checkout_request_id = callback_data.get("CheckoutRequestID")
         result_code = callback_data.get("ResultCode")
         
-        logger.info(f"M-Pesa callback: {checkout_request_id}, ResultCode: {result_code}")
         
         if result_code == 0:
             # Payment successful
